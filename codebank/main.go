@@ -7,19 +7,10 @@ import (
 	"os"
 
 	"github.com/codeedu/codebank/infrastructure/grpc/server"
-	"github.com/codeedu/codebank/infrastructure/kafka"
 	"github.com/codeedu/codebank/infrastructure/repository"
 	"github.com/codeedu/codebank/usecase"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 )
-
-func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("error loading .env file")
-	}
-}
 
 func main() {
 	db := setupDb()
@@ -27,6 +18,7 @@ func main() {
 	producer := setupKafkaProducer()
 	processTransactionUseCase := setupTransactionUseCase(db, producer)
 	serveGrpc(processTransactionUseCase)
+
 }
 
 func setupTransactionUseCase(db *sql.DB, producer kafka.KafkaProducer) usecase.UseCaseTransaction {
@@ -44,11 +36,11 @@ func setupKafkaProducer() kafka.KafkaProducer {
 
 func setupDb() *sql.DB {
 	psqlInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		os.Getenv("host"),
-		os.Getenv("port"),
-		os.Getenv("user"),
-		os.Getenv("password"),
-		os.Getenv("dbname"),
+		"db",
+		"5432",
+		"postgres",
+		"root",
+		"codebank",
 	)
 	db, err := sql.Open("postgres", psqlInfo)
 	if err != nil {
@@ -64,18 +56,17 @@ func serveGrpc(processTransactionUseCase usecase.UseCaseTransaction) {
 	grpcServer.Serve()
 }
 
-//
-//cc := domain.NewCreditCard()
-//cc.Number = "1234"
-//cc.Name = "Wesley"
-//cc.ExpirationYear = 2021
-//cc.ExpirationMonth = 7
-//cc.CVV = 123
-//cc.Limit = 1000
-//cc.Balance = 0
-//
-//repo := repository.NewTransactionRepositoryDb(db)
-//err := repo.CreateCreditCard(*cc)
-//if err != nil {
-//fmt.Println(err)
-//}
+// cc := domain.NewCreditCard()
+// cc.Number = "1234"
+// cc.Name = "Wesley"
+// cc.ExpirationYear = 2021
+// cc.ExpirationMonth = 7
+// cc.CVV = 123
+// cc.Limit = 1000
+// cc.Balance = 0
+
+// repo := repository.NewTransactionRepositoryDb(db)
+// err := repo.CreateCreditCard(*cc)
+// if err != nil {
+// 	fmt.Println(err)
+// }
